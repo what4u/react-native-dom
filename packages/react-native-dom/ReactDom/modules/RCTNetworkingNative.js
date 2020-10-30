@@ -112,21 +112,21 @@ class RCTNetworkingNative extends RCTEventEmitter {
   }
 
   handleLoadEnd = (request: RCTHttpRequest) => () => {
+    // requestId, errorDescription, timed-out
+    const completeJSON = [request.requestId, null, false];
+    this.sendEventWithName("didCompleteNetworkResponse", completeJSON);
+    delete this.requestStore[request.requestId];
+  };
+
+  handleLoad = (request: RCTHttpRequest, responseType: string) => () => {
+    this.sendData(request, responseType);
+    
     const responseURL = request.responseURL;
     const headers = parseHttpHeaders(request.getAllResponseHeaders());
     const status = request.status;
 
     const responseJSON = [request.requestId, status, headers, responseURL];
     this.sendEventWithName("didReceiveNetworkResponse", responseJSON);
-  };
-
-  handleLoad = (request: RCTHttpRequest, responseType: string) => () => {
-    this.sendData(request, responseType);
-
-    // requestId, errorDescription, timed-out
-    const completeJSON = [request.requestId, null, false];
-    this.sendEventWithName("didCompleteNetworkResponse", completeJSON);
-    delete this.requestStore[request.requestId];
   };
 
   handleError = (request: RCTHttpRequest) => () => {
